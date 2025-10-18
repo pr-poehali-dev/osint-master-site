@@ -22,6 +22,46 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const exportToJSON = (data: any, filename: string) => {
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast({ title: "Успешно", description: "Данные экспортированы в JSON" });
+  };
+
+  const exportToCSV = (data: any, filename: string) => {
+    let csvContent = '';
+    if (Array.isArray(data)) {
+      if (data.length === 0) return;
+      const headers = Object.keys(data[0]);
+      csvContent = headers.join(',') + '\n';
+      data.forEach(row => {
+        csvContent += headers.map(h => `"${row[h] || ''}"`).join(',') + '\n';
+      });
+    } else {
+      const headers = Object.keys(data);
+      csvContent = headers.join(',') + '\n';
+      csvContent += headers.map(h => `"${data[h] || ''}"`).join(',') + '\n';
+    }
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast({ title: "Успешно", description: "Данные экспортированы в CSV" });
+  };
+
   const searchByPhone = async () => {
     if (!phoneNumber) {
       toast({ title: "Ошибка", description: "Введите номер телефона", variant: "destructive" });
@@ -141,58 +181,71 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
       
-      <div className="watermark">OSINT MASTER</div>
+
       
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600 animate-pulse"></div>
       
       <div className="container mx-auto px-4 py-8 relative z-10">
-        <header className="text-center mb-12 pt-8">
-          <h1 className="text-6xl md:text-7xl font-bold mb-4 glowing-text font-orbitron">
-            Вас приветствует OSINT MASTER
-          </h1>
-          <p className="text-gray-400 text-lg">Анонимный поиск информации</p>
-          <div className="flex justify-center gap-2 mt-6">
-            <Badge variant="outline" className="border-red-500 text-red-500">
-              <Icon name="Shield" size={14} className="mr-1" />
-              Анонимно
-            </Badge>
-            <Badge variant="outline" className="border-green-500 text-green-500">
-              <Icon name="Zap" size={14} className="mr-1" />
-              Быстро
-            </Badge>
-            <Badge variant="outline" className="border-blue-500 text-blue-500">
-              <Icon name="Database" size={14} className="mr-1" />
-              База данных
-            </Badge>
+        <header className="text-center mb-12 pt-12 relative">
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-red-600/10 rounded-full blur-3xl"></div>
+          <div className="relative z-10">
+            <div className="mb-6 flex justify-center">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-red-900/50 to-black border border-red-700/50 backdrop-blur">
+                <Icon name="Shield" size={48} className="text-red-500" />
+              </div>
+            </div>
+            <h1 className="text-5xl md:text-7xl font-bold mb-4 glowing-text font-orbitron leading-tight">
+              OSINT MASTER
+            </h1>
+            <p className="text-gray-400 text-xl mb-2">Анонимный поиск информации</p>
+            <p className="text-gray-600 text-sm mb-6">База данных: 43+ записей | Быстрый поиск | Экспорт данных</p>
+            <div className="flex justify-center gap-3 flex-wrap">
+              <Badge variant="outline" className="border-red-500/50 text-red-500 bg-red-950/30 px-4 py-2">
+                <Icon name="Shield" size={16} className="mr-2" />
+                Анонимно
+              </Badge>
+              <Badge variant="outline" className="border-green-500/50 text-green-500 bg-green-950/30 px-4 py-2">
+                <Icon name="Zap" size={16} className="mr-2" />
+                Быстро
+              </Badge>
+              <Badge variant="outline" className="border-blue-500/50 text-blue-500 bg-blue-950/30 px-4 py-2">
+                <Icon name="Database" size={16} className="mr-2" />
+                База данных
+              </Badge>
+              <Badge variant="outline" className="border-purple-500/50 text-purple-500 bg-purple-950/30 px-4 py-2">
+                <Icon name="Download" size={16} className="mr-2" />
+                Экспорт
+              </Badge>
+            </div>
           </div>
         </header>
 
-        <Tabs defaultValue="phone" className="max-w-4xl mx-auto">
-          <TabsList className="grid w-full grid-cols-5 bg-gray-900 border border-red-900">
-            <TabsTrigger value="phone" className="data-[state=active]:bg-red-600 text-xs sm:text-sm">
+        <Tabs defaultValue="phone" className="max-w-5xl mx-auto">
+          <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-gray-900 via-gray-900 to-gray-900 border border-red-900/50 p-1 rounded-xl backdrop-blur">
+            <TabsTrigger value="phone" className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-red-600 data-[state=active]:to-red-700 data-[state=active]:shadow-lg text-xs sm:text-sm rounded-lg transition-all">
               <Icon name="Phone" size={16} className="sm:mr-2" />
               <span className="hidden sm:inline">Телефон</span>
             </TabsTrigger>
-            <TabsTrigger value="telegram" className="data-[state=active]:bg-red-600 text-xs sm:text-sm">
+            <TabsTrigger value="telegram" className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-red-600 data-[state=active]:to-red-700 data-[state=active]:shadow-lg text-xs sm:text-sm rounded-lg transition-all">
               <Icon name="Send" size={16} className="sm:mr-2" />
               <span className="hidden sm:inline">Telegram</span>
             </TabsTrigger>
-            <TabsTrigger value="vk" className="data-[state=active]:bg-red-600 text-xs sm:text-sm">
+            <TabsTrigger value="vk" className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-red-600 data-[state=active]:to-red-700 data-[state=active]:shadow-lg text-xs sm:text-sm rounded-lg transition-all">
               <Icon name="Users" size={16} className="sm:mr-2" />
               <span className="hidden sm:inline">VK</span>
             </TabsTrigger>
-            <TabsTrigger value="name" className="data-[state=active]:bg-red-600 text-xs sm:text-sm">
+            <TabsTrigger value="name" className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-red-600 data-[state=active]:to-red-700 data-[state=active]:shadow-lg text-xs sm:text-sm rounded-lg transition-all">
               <Icon name="User" size={16} className="sm:mr-2" />
               <span className="hidden sm:inline">ФИО</span>
             </TabsTrigger>
-            <TabsTrigger value="photo" className="data-[state=active]:bg-red-600 text-xs sm:text-sm">
+            <TabsTrigger value="photo" className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-red-600 data-[state=active]:to-red-700 data-[state=active]:shadow-lg text-xs sm:text-sm rounded-lg transition-all">
               <Icon name="Image" size={16} className="sm:mr-2" />
               <span className="hidden sm:inline">Фото</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="phone" className="mt-6">
-            <Card className="bg-gray-900/80 border-red-900 backdrop-blur">
+            <Card className="bg-gradient-to-br from-gray-900/90 to-black/90 border-red-900/50 backdrop-blur-xl shadow-2xl">
               <CardHeader>
                 <CardTitle className="text-red-500 flex items-center gap-2">
                   <Icon name="Phone" size={24} />
@@ -208,12 +261,12 @@ const Index = () => {
                     placeholder="+7 (900) 123-45-67"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="bg-black/50 border-gray-700 focus:border-red-500 text-white"
+                    className="bg-black/70 border-gray-700 focus:border-red-500 text-white placeholder:text-gray-500 shadow-inner"
                   />
                   <Button 
                     onClick={searchByPhone}
                     disabled={loading}
-                    className="bg-red-600 hover:bg-red-700 min-w-[120px]"
+                    className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 min-w-[120px] shadow-lg"
                   >
                     {loading ? (
                       <Icon name="Loader2" size={18} className="animate-spin" />
@@ -228,10 +281,32 @@ const Index = () => {
 
                 {phoneResult && (
                   <div className="mt-6 p-6 bg-black/50 border border-red-900 rounded-lg animate-fade-in">
-                    <h3 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
-                      <Icon name="UserCheck" size={20} />
-                      Результаты поиска
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-red-500 flex items-center gap-2">
+                        <Icon name="UserCheck" size={20} />
+                        Результаты поиска
+                      </h3>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => exportToJSON(phoneResult, 'phone-search')}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-700 text-red-500 hover:bg-red-900/20"
+                        >
+                          <Icon name="Download" size={14} className="mr-1" />
+                          JSON
+                        </Button>
+                        <Button
+                          onClick={() => exportToCSV(phoneResult, 'phone-search')}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-700 text-red-500 hover:bg-red-900/20"
+                        >
+                          <Icon name="Download" size={14} className="mr-1" />
+                          CSV
+                        </Button>
+                      </div>
+                    </div>
                     <div className="grid gap-3 text-gray-300">
                       <div className="flex items-start gap-3">
                         <Icon name="Phone" size={18} className="text-red-500 mt-1" />
@@ -301,7 +376,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="telegram" className="mt-6">
-            <Card className="bg-gray-900/80 border-red-900 backdrop-blur">
+            <Card className="bg-gradient-to-br from-gray-900/90 to-black/90 border-red-900/50 backdrop-blur-xl shadow-2xl">
               <CardHeader>
                 <CardTitle className="text-red-500 flex items-center gap-2">
                   <Icon name="Send" size={24} />
@@ -337,10 +412,32 @@ const Index = () => {
 
                 {telegramResult && (
                   <div className="mt-6 p-6 bg-black/50 border border-red-900 rounded-lg animate-fade-in">
-                    <h3 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
-                      <Icon name="UserCheck" size={20} />
-                      Профиль найден
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-red-500 flex items-center gap-2">
+                        <Icon name="UserCheck" size={20} />
+                        Профиль найден
+                      </h3>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => exportToJSON(telegramResult, 'telegram-search')}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-700 text-red-500 hover:bg-red-900/20"
+                        >
+                          <Icon name="Download" size={14} className="mr-1" />
+                          JSON
+                        </Button>
+                        <Button
+                          onClick={() => exportToCSV(telegramResult, 'telegram-search')}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-700 text-red-500 hover:bg-red-900/20"
+                        >
+                          <Icon name="Download" size={14} className="mr-1" />
+                          CSV
+                        </Button>
+                      </div>
+                    </div>
                     <div className="grid gap-3 text-gray-300">
                       <div className="flex items-start gap-3">
                         <Icon name="AtSign" size={18} className="text-red-500 mt-1" />
@@ -392,7 +489,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="vk" className="mt-6">
-            <Card className="bg-gray-900/80 border-red-900 backdrop-blur">
+            <Card className="bg-gradient-to-br from-gray-900/90 to-black/90 border-red-900/50 backdrop-blur-xl shadow-2xl">
               <CardHeader>
                 <CardTitle className="text-red-500 flex items-center gap-2">
                   <Icon name="Users" size={24} />
@@ -428,10 +525,32 @@ const Index = () => {
 
                 {vkResult && (
                   <div className="mt-6 p-6 bg-black/50 border border-red-900 rounded-lg animate-fade-in">
-                    <h3 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
-                      <Icon name="UserCheck" size={20} />
-                      Профиль найден
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-red-500 flex items-center gap-2">
+                        <Icon name="UserCheck" size={20} />
+                        Профиль найден
+                      </h3>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => exportToJSON(vkResult, 'vk-search')}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-700 text-red-500 hover:bg-red-900/20"
+                        >
+                          <Icon name="Download" size={14} className="mr-1" />
+                          JSON
+                        </Button>
+                        <Button
+                          onClick={() => exportToCSV(vkResult, 'vk-search')}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-700 text-red-500 hover:bg-red-900/20"
+                        >
+                          <Icon name="Download" size={14} className="mr-1" />
+                          CSV
+                        </Button>
+                      </div>
+                    </div>
                     <div className="grid gap-3 text-gray-300">
                       {vkResult.fullName && (
                         <div className="flex items-start gap-3">
@@ -473,7 +592,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="name" className="mt-6">
-            <Card className="bg-gray-900/80 border-red-900 backdrop-blur">
+            <Card className="bg-gradient-to-br from-gray-900/90 to-black/90 border-red-900/50 backdrop-blur-xl shadow-2xl">
               <CardHeader>
                 <CardTitle className="text-red-500 flex items-center gap-2">
                   <Icon name="User" size={24} />
@@ -515,10 +634,32 @@ const Index = () => {
 
                 {nameResult && nameResult.results && (
                   <div className="mt-6 p-6 bg-black/50 border border-red-900 rounded-lg animate-fade-in">
-                    <h3 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
-                      <Icon name="UserCheck" size={20} />
-                      Найдено: {nameResult.results.length}
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-red-500 flex items-center gap-2">
+                        <Icon name="UserCheck" size={20} />
+                        Найдено: {nameResult.results.length}
+                      </h3>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => exportToJSON(nameResult.results, 'name-search')}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-700 text-red-500 hover:bg-red-900/20"
+                        >
+                          <Icon name="Download" size={14} className="mr-1" />
+                          JSON
+                        </Button>
+                        <Button
+                          onClick={() => exportToCSV(nameResult.results, 'name-search')}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-700 text-red-500 hover:bg-red-900/20"
+                        >
+                          <Icon name="Download" size={14} className="mr-1" />
+                          CSV
+                        </Button>
+                      </div>
+                    </div>
                     <div className="space-y-4 max-h-96 overflow-y-auto">
                       {nameResult.results.map((person: any, idx: number) => (
                         <div key={idx} className="p-4 bg-black/30 rounded border border-red-900/50">
@@ -538,7 +679,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="photo" className="mt-6">
-            <Card className="bg-gray-900/80 border-red-900 backdrop-blur">
+            <Card className="bg-gradient-to-br from-gray-900/90 to-black/90 border-red-900/50 backdrop-blur-xl shadow-2xl">
               <CardHeader>
                 <CardTitle className="text-red-500 flex items-center gap-2">
                   <Icon name="Image" size={24} />
@@ -582,10 +723,32 @@ const Index = () => {
 
                 {photoResult && photoResult.matches && (
                   <div className="mt-6 p-6 bg-black/50 border border-red-900 rounded-lg animate-fade-in">
-                    <h3 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
-                      <Icon name="UserCheck" size={20} />
-                      Найдено совпадений: {photoResult.matches.length}
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-red-500 flex items-center gap-2">
+                        <Icon name="UserCheck" size={20} />
+                        Найдено совпадений: {photoResult.matches.length}
+                      </h3>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => exportToJSON(photoResult.matches, 'photo-search')}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-700 text-red-500 hover:bg-red-900/20"
+                        >
+                          <Icon name="Download" size={14} className="mr-1" />
+                          JSON
+                        </Button>
+                        <Button
+                          onClick={() => exportToCSV(photoResult.matches, 'photo-search')}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-700 text-red-500 hover:bg-red-900/20"
+                        >
+                          <Icon name="Download" size={14} className="mr-1" />
+                          CSV
+                        </Button>
+                      </div>
+                    </div>
                     <div className="space-y-4">
                       {photoResult.matches.map((match: any, idx: number) => (
                         <div key={idx} className="p-4 bg-black/30 rounded border border-red-900/50">
