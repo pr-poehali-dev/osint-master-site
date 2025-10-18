@@ -1,0 +1,16 @@
+{
+  "tests": [{
+    "name": "Поиск по существующему номеру",
+    "method": "POST",
+    "path": "/",
+    "body": {
+      "phone": "+79001234567"
+    },
+    "expectedStatus": 200,
+    "expectedBody": {
+      "phone": "string",
+      "fullName": "string"
+    },
+    "bodyMatcher": "partial"
+  }]
+}

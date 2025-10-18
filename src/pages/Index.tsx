@@ -10,8 +10,15 @@ import { useToast } from "@/hooks/use-toast";
 const Index = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [telegramUsername, setTelegramUsername] = useState("");
+  const [vkUsername, setVkUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [phoneResult, setPhoneResult] = useState<any>(null);
   const [telegramResult, setTelegramResult] = useState<any>(null);
+  const [vkResult, setVkResult] = useState<any>(null);
+  const [nameResult, setNameResult] = useState<any>(null);
+  const [photoResult, setPhotoResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -22,22 +29,20 @@ const Index = () => {
     }
     
     setLoading(true);
-    setTimeout(() => {
-      setPhoneResult({
-        phone: phoneNumber,
-        fullName: "Иванов Иван Иванович",
-        birthDate: "15.03.1985",
-        age: 39,
-        region: "Москва",
-        operator: "МегаФон",
-        parents: "Иванов Иван Петрович, Иванова Мария Сергеевна",
-        address: "г. Москва, ул. Ленина, д. 10",
-        email: "ivanov@example.com",
-        socialMedia: ["VK", "Instagram", "Facebook"]
+    try {
+      const response = await fetch('https://functions.poehali.dev/c52a58fb-0727-40a8-95a2-17973faaac0b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'phone', phone: phoneNumber })
       });
-      setLoading(false);
+      const data = await response.json();
+      setPhoneResult(data);
       toast({ title: "Успешно", description: "Информация найдена" });
-    }, 1500);
+    } catch (error) {
+      toast({ title: "Ошибка", description: "Не удалось выполнить поиск", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const searchByTelegram = async () => {
@@ -47,27 +52,96 @@ const Index = () => {
     }
     
     setLoading(true);
-    setTimeout(() => {
-      setTelegramResult({
-        username: telegramUsername,
-        fullName: "Петров Петр Петрович",
-        phone: "+7 (900) 123-45-67",
-        userId: "123456789",
-        bio: "Разработчик | Москва",
-        groups: ["Tech Community", "Developers Chat", "OSINT Tools"],
-        lastSeen: "2 часа назад",
-        photoUrl: "/placeholder.svg"
+    try {
+      const response = await fetch('https://functions.poehali.dev/c52a58fb-0727-40a8-95a2-17973faaac0b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'telegram', username: telegramUsername })
       });
-      setLoading(false);
+      const data = await response.json();
+      setTelegramResult(data);
       toast({ title: "Успешно", description: "Профиль найден" });
-    }, 1500);
+    } catch (error) {
+      toast({ title: "Ошибка", description: "Не удалось выполнить поиск", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchByVk = async () => {
+    if (!vkUsername) {
+      toast({ title: "Ошибка", description: "Введите ID или username", variant: "destructive" });
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/c52a58fb-0727-40a8-95a2-17973faaac0b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'vk', username: vkUsername })
+      });
+      const data = await response.json();
+      setVkResult(data);
+      toast({ title: "Успешно", description: "Профиль найден" });
+    } catch (error) {
+      toast({ title: "Ошибка", description: "Не удалось выполнить поиск", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchByName = async () => {
+    if (!firstName || !lastName) {
+      toast({ title: "Ошибка", description: "Введите имя и фамилию", variant: "destructive" });
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/c52a58fb-0727-40a8-95a2-17973faaac0b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'name', firstName, lastName })
+      });
+      const data = await response.json();
+      setNameResult(data);
+      toast({ title: "Успешно", description: `Найдено результатов: ${data.results?.length || 0}` });
+    } catch (error) {
+      toast({ title: "Ошибка", description: "Не удалось выполнить поиск", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchByPhoto = async () => {
+    if (!photoFile) {
+      toast({ title: "Ошибка", description: "Загрузите фотографию", variant: "destructive" });
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/c52a58fb-0727-40a8-95a2-17973faaac0b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'photo' })
+      });
+      const data = await response.json();
+      setPhotoResult(data);
+      toast({ title: "Успешно", description: "Совпадения найдены" });
+    } catch (error) {
+      toast({ title: "Ошибка", description: "Не удалось выполнить поиск", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
       
-      <div className="watermark">OSINT 🤖</div>
+      <div className="watermark">OSINT MASTER</div>
       
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600 animate-pulse"></div>
       
@@ -94,14 +168,26 @@ const Index = () => {
         </header>
 
         <Tabs defaultValue="phone" className="max-w-4xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-900 border border-red-900">
-            <TabsTrigger value="phone" className="data-[state=active]:bg-red-600">
-              <Icon name="Phone" size={18} className="mr-2" />
-              Поиск по телефону
+          <TabsList className="grid w-full grid-cols-5 bg-gray-900 border border-red-900">
+            <TabsTrigger value="phone" className="data-[state=active]:bg-red-600 text-xs sm:text-sm">
+              <Icon name="Phone" size={16} className="sm:mr-2" />
+              <span className="hidden sm:inline">Телефон</span>
             </TabsTrigger>
-            <TabsTrigger value="telegram" className="data-[state=active]:bg-red-600">
-              <Icon name="Send" size={18} className="mr-2" />
-              Поиск по Telegram
+            <TabsTrigger value="telegram" className="data-[state=active]:bg-red-600 text-xs sm:text-sm">
+              <Icon name="Send" size={16} className="sm:mr-2" />
+              <span className="hidden sm:inline">Telegram</span>
+            </TabsTrigger>
+            <TabsTrigger value="vk" className="data-[state=active]:bg-red-600 text-xs sm:text-sm">
+              <Icon name="Users" size={16} className="sm:mr-2" />
+              <span className="hidden sm:inline">VK</span>
+            </TabsTrigger>
+            <TabsTrigger value="name" className="data-[state=active]:bg-red-600 text-xs sm:text-sm">
+              <Icon name="User" size={16} className="sm:mr-2" />
+              <span className="hidden sm:inline">ФИО</span>
+            </TabsTrigger>
+            <TabsTrigger value="photo" className="data-[state=active]:bg-red-600 text-xs sm:text-sm">
+              <Icon name="Image" size={16} className="sm:mr-2" />
+              <span className="hidden sm:inline">Фото</span>
             </TabsTrigger>
           </TabsList>
 
@@ -298,6 +384,222 @@ const Index = () => {
                           <span className="text-gray-500">Последняя активность:</span> {telegramResult.lastSeen}
                         </div>
                       </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="vk" className="mt-6">
+            <Card className="bg-gray-900/80 border-red-900 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="text-red-500 flex items-center gap-2">
+                  <Icon name="Users" size={24} />
+                  Поиск по ВКонтакте
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Введите ID или username профиля ВК
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="id123456789 или username"
+                    value={vkUsername}
+                    onChange={(e) => setVkUsername(e.target.value)}
+                    className="bg-black/50 border-gray-700 focus:border-red-500 text-white"
+                  />
+                  <Button 
+                    onClick={searchByVk}
+                    disabled={loading}
+                    className="bg-red-600 hover:bg-red-700 min-w-[120px]"
+                  >
+                    {loading ? (
+                      <Icon name="Loader2" size={18} className="animate-spin" />
+                    ) : (
+                      <>
+                        <Icon name="Search" size={18} className="mr-2" />
+                        Найти
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {vkResult && (
+                  <div className="mt-6 p-6 bg-black/50 border border-red-900 rounded-lg animate-fade-in">
+                    <h3 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
+                      <Icon name="UserCheck" size={20} />
+                      Профиль найден
+                    </h3>
+                    <div className="grid gap-3 text-gray-300">
+                      {vkResult.fullName && (
+                        <div className="flex items-start gap-3">
+                          <Icon name="User" size={18} className="text-red-500 mt-1" />
+                          <div>
+                            <span className="text-gray-500">ФИО:</span> {vkResult.fullName}
+                          </div>
+                        </div>
+                      )}
+                      {vkResult.vkId && (
+                        <div className="flex items-start gap-3">
+                          <Icon name="Hash" size={18} className="text-red-500 mt-1" />
+                          <div>
+                            <span className="text-gray-500">VK ID:</span> {vkResult.vkId}
+                          </div>
+                        </div>
+                      )}
+                      {vkResult.city && (
+                        <div className="flex items-start gap-3">
+                          <Icon name="MapPin" size={18} className="text-red-500 mt-1" />
+                          <div>
+                            <span className="text-gray-500">Город:</span> {vkResult.city}
+                          </div>
+                        </div>
+                      )}
+                      {vkResult.phone && (
+                        <div className="flex items-start gap-3">
+                          <Icon name="Phone" size={18} className="text-red-500 mt-1" />
+                          <div>
+                            <span className="text-gray-500">Телефон:</span> {vkResult.phone}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="name" className="mt-6">
+            <Card className="bg-gray-900/80 border-red-900 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="text-red-500 flex items-center gap-2">
+                  <Icon name="User" size={24} />
+                  Поиск по ФИО
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Введите имя и фамилию для поиска
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Имя"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="bg-black/50 border-gray-700 focus:border-red-500 text-white"
+                  />
+                  <Input
+                    placeholder="Фамилия"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="bg-black/50 border-gray-700 focus:border-red-500 text-white"
+                  />
+                </div>
+                <Button 
+                  onClick={searchByName}
+                  disabled={loading}
+                  className="bg-red-600 hover:bg-red-700 w-full"
+                >
+                  {loading ? (
+                    <Icon name="Loader2" size={18} className="animate-spin" />
+                  ) : (
+                    <>
+                      <Icon name="Search" size={18} className="mr-2" />
+                      Найти
+                    </>
+                  )}
+                </Button>
+
+                {nameResult && nameResult.results && (
+                  <div className="mt-6 p-6 bg-black/50 border border-red-900 rounded-lg animate-fade-in">
+                    <h3 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
+                      <Icon name="UserCheck" size={20} />
+                      Найдено: {nameResult.results.length}
+                    </h3>
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                      {nameResult.results.map((person: any, idx: number) => (
+                        <div key={idx} className="p-4 bg-black/30 rounded border border-red-900/50">
+                          <div className="grid gap-2 text-gray-300 text-sm">
+                            {person.fullName && <div><span className="text-gray-500">ФИО:</span> {person.fullName}</div>}
+                            {person.birthDate && <div><span className="text-gray-500">Дата рождения:</span> {person.birthDate}</div>}
+                            {person.city && <div><span className="text-gray-500">Город:</span> {person.city}</div>}
+                            {person.phone && <div><span className="text-gray-500">Телефон:</span> {person.phone}</div>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="photo" className="mt-6">
+            <Card className="bg-gray-900/80 border-red-900 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="text-red-500 flex items-center gap-2">
+                  <Icon name="Image" size={24} />
+                  Поиск по фотографии
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Загрузите фото для распознавания лица и поиска совпадений
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center hover:border-red-500 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="photo-upload"
+                    className="hidden"
+                    onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+                  />
+                  <label htmlFor="photo-upload" className="cursor-pointer">
+                    <Icon name="Upload" size={48} className="mx-auto text-gray-500 mb-4" />
+                    <p className="text-gray-400 mb-2">
+                      {photoFile ? photoFile.name : 'Нажмите для загрузки фотографии'}
+                    </p>
+                    <p className="text-xs text-gray-600">JPG, PNG, WEBP до 10MB</p>
+                  </label>
+                </div>
+                <Button 
+                  onClick={searchByPhoto}
+                  disabled={loading || !photoFile}
+                  className="bg-red-600 hover:bg-red-700 w-full"
+                >
+                  {loading ? (
+                    <Icon name="Loader2" size={18} className="animate-spin" />
+                  ) : (
+                    <>
+                      <Icon name="Search" size={18} className="mr-2" />
+                      Найти
+                    </>
+                  )}
+                </Button>
+
+                {photoResult && photoResult.matches && (
+                  <div className="mt-6 p-6 bg-black/50 border border-red-900 rounded-lg animate-fade-in">
+                    <h3 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
+                      <Icon name="UserCheck" size={20} />
+                      Найдено совпадений: {photoResult.matches.length}
+                    </h3>
+                    <div className="space-y-4">
+                      {photoResult.matches.map((match: any, idx: number) => (
+                        <div key={idx} className="p-4 bg-black/30 rounded border border-red-900/50">
+                          <div className="flex items-center gap-4 mb-3">
+                            <div className="text-2xl font-bold text-red-500">{match.confidence}%</div>
+                            <div className="text-sm text-gray-400">совпадение</div>
+                          </div>
+                          <div className="grid gap-2 text-gray-300 text-sm">
+                            {match.fullName && <div><span className="text-gray-500">ФИО:</span> {match.fullName}</div>}
+                            {match.source && <div><span className="text-gray-500">Источник:</span> {match.source}</div>}
+                            {match.city && <div><span className="text-gray-500">Город:</span> {match.city}</div>}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
